@@ -23,6 +23,17 @@ npm run dev
 
 Open `http://localhost:5173`. Vite proxies `/api` requests to the Go server at `http://localhost:8080`. Set the backend `ADDRESS` environment variable to use a different listen address.
 
+### Run frontend and backend with Docker
+
+The multi-stage image builds the React application, compiles a static Go binary, and copies only those artifacts into a non-root runtime image:
+
+```bash
+docker build -t sezzle-calculator .
+docker run --rm -p 8080:8080 sezzle-calculator
+```
+
+Open `http://localhost:8080`. In the container, the Go process serves both the compiled frontend and `/api/v1/calculate`; no Node.js process is included in the runtime image.
+
 ## Features
 
 - Addition, subtraction, multiplication, division, exponentiation, and square root
@@ -55,6 +66,22 @@ Modified shortcuts are ignored, so browser commands such as `Cmd+R` and `Ctrl+R`
 ## API
 
 `POST /api/v1/calculate`
+
+Example request from a terminal:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/calculate \
+  -H 'Content-Type: application/json' \
+  --data '{"operation":"power","operands":[2,10]}'
+```
+
+Response:
+
+```json
+{
+  "result": 1024
+}
+```
 
 Binary request example:
 
@@ -108,6 +135,10 @@ The HTTP handler contains no arithmetic. It performs transport concerns and dele
 
 The React calculator hook exposes one set of actions (`inputDigit`, `selectOperation`, `calculateResult`, and so on). Buttons and the keyboard adapter invoke those same actions, preventing divergent input behavior. Request sequencing ignores late responses after a clear or history reuse.
 
+### Why the production container uses one Go process
+
+The frontend is a static Vite build, so running a separate Node.js server in production would add an unnecessary process and dependency surface. When `STATIC_DIR` is configured, the Go composition layer serves those assets while preserving the API and health routes. Without `STATIC_DIR`, local development remains API-only and uses Vite's development proxy.
+
 ### Why history uses localStorage
 
 History is local UI state: there is no authentication or cross-device identity, and persistence should survive a refresh without adding a database. A dedicated adapter safely parses stored values, filters invalid entries, tolerates unavailable/corrupted storage, and caps the list at 50. Only successful API calculations are recorded; duplicates are intentionally preserved as separate user actions.
@@ -136,6 +167,29 @@ go test ./...
 go vet ./...
 ```
 
+Run both layers through the root `Makefile`:
+
+```bash
+make test
+make lint
+make build
+make coverage
+```
+
+### Coverage
+
+```bash
+cd frontend
+npm run test:coverage
+# Open coverage/index.html for the detailed HTML report.
+
+cd ../backend
+go test -coverprofile=coverage.out ./internal/...
+go tool cover -func=coverage.out
+```
+
+Vitest enforces minimum coverage thresholds of 80% statements, 75% branches, 90% functions, and 80% lines. The latest measured summary and scope are recorded in [COVERAGE.md](./COVERAGE.md). Generated HTML/JSON profiles and Go coverage data are ignored by Git and can be reproduced with `make coverage`.
+
 Frontend tests use Vitest and React Testing Library to cover API payloads, power/square-root behavior, failures, keyboard mappings, history persistence/reuse/deletion/clearing, corrupt storage, ordering, and the 50-entry limit. Backend tests are table-driven and cover all operations, operand-count errors, malformed requests, invalid domains, unsupported operations, and non-finite values/results.
 
 ## Trade-offs
@@ -143,3 +197,4 @@ Frontend tests use Vitest and React Testing Library to cover API payloads, power
 - History is intentionally browser- and origin-local; it does not sync across devices or users.
 - Relative timestamps update when the history panel renders rather than on a background timer, avoiding work for a list capped at 50 items.
 - Display formatting uses 15 significant digits to suppress common IEEE-754 noise. Original numeric results remain unchanged in history and API data.
+- The container serves static files directly and does not implement client-side route fallback because this calculator has a single frontend route.

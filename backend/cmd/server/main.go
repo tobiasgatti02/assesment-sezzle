@@ -9,6 +9,7 @@ import (
 
 	"sezzle-calculator/backend/internal/calculator"
 	"sezzle-calculator/backend/internal/httpapi"
+	"sezzle-calculator/backend/internal/webapp"
 )
 
 func main() {
@@ -18,8 +19,11 @@ func main() {
 	}
 
 	server := &http.Server{
-		Addr:              address,
-		Handler:           httpapi.NewHandler(calculator.NewService()).Routes(),
+		Addr: address,
+		Handler: webapp.New(
+			httpapi.NewHandler(calculator.NewService()).Routes(),
+			os.Getenv("STATIC_DIR"),
+		),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      10 * time.Second,

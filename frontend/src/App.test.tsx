@@ -130,7 +130,55 @@ describe("calculator", () => {
     await user.click(screen.getByRole("button", { name: "0" }));
     await user.click(screen.getByRole("button", { name: "Calculate result" }));
 
-    expect(await screen.findByText("Cannot divide by zero")).toBeInTheDocument();
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Cannot divide by zero",
+    );
+    expect(screen.getByText("No calculations yet")).toBeInTheDocument();
+  });
+
+  it("shows an accessible syntax error for an incomplete calculation", async () => {
+    const user = userEvent.setup();
+    const fetchMock = mockFetch();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "2" }));
+    await user.click(screen.getByRole("button", { name: "Add" }));
+    await user.click(screen.getByRole("button", { name: "Calculate result" }));
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Complete the calculation first",
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.getByText("No calculations yet")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "4" }));
+    expect(display()).toHaveTextContent("4");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("surfaces malformed calculation responses as a syntax error", async () => {
+    const user = userEvent.setup();
+    mockFetch(
+      response(
+        {
+          error: {
+            code: "MALFORMED_REQUEST",
+            message: "request body must be valid calculation JSON",
+          },
+        },
+        false,
+      ),
+    );
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "2" }));
+    await user.click(screen.getByRole("button", { name: "Add" }));
+    await user.click(screen.getByRole("button", { name: "3" }));
+    await user.click(screen.getByRole("button", { name: "Calculate result" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Invalid calculation syntax",
+    );
     expect(screen.getByText("No calculations yet")).toBeInTheDocument();
   });
 
@@ -205,6 +253,58 @@ describe("calculator", () => {
 
     fireEvent.keyDown(window, { key: "r" });
     await waitFor(() => expect(display()).toHaveTextContent("3"));
+  });
+
+  it("reveals the scientific section and calculates sine in radians", async () => {
+    const user = userEvent.setup();
+    const fetchMock = mockFetch(response({ result: 0 }));
+    render(<App />);
+
+    const toggle = screen.getByRole("button", { name: /Scientific/ });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(
+      screen.queryByRole("button", { name: "Sine in radians" }),
+    ).not.toBeInTheDocument();
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText("RAD")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Sine in radians" }));
+
+    await waitFor(() => expect(display()).toHaveTextContent("0"));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/v1/calculate",
+      expect.objectContaining({
+        body: JSON.stringify({ operation: "sin", operands: [0] }),
+      }),
+    );
+    expect(
+      screen.getByText("sin(0)", { selector: ".history-expression" }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows a logarithm domain error without adding history", async () => {
+    const user = userEvent.setup();
+    mockFetch(
+      response(
+        {
+          error: {
+            code: "INVALID_DOMAIN",
+            message: "natural logarithm is only defined for positive numbers",
+          },
+        },
+        false,
+      ),
+    );
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Scientific/ }));
+    await user.click(screen.getByRole("button", { name: "Natural logarithm" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Logarithms require a positive number",
+    );
+    expect(screen.getByText("No calculations yet")).toBeInTheDocument();
   });
 });
 

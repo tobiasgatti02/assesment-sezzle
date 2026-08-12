@@ -22,7 +22,12 @@ func TestCalculateHandler(t *testing.T) {
 	}{
 		{name: "power", body: `{"operation":"power","operands":[2,10]}`, wantStatus: http.StatusOK, wantResult: floatPointer(1024)},
 		{name: "square root", body: `{"operation":"sqrt","operands":[81]}`, wantStatus: http.StatusOK, wantResult: floatPointer(9)},
+		{name: "sine", body: `{"operation":"sin","operands":[0]}`, wantStatus: http.StatusOK, wantResult: floatPointer(0)},
+		{name: "base-10 logarithm", body: `{"operation":"log10","operands":[100]}`, wantStatus: http.StatusOK, wantResult: floatPointer(2)},
+		{name: "reciprocal", body: `{"operation":"reciprocal","operands":[4]}`, wantStatus: http.StatusOK, wantResult: floatPointer(0.25)},
 		{name: "negative square root", body: `{"operation":"sqrt","operands":[-1]}`, wantStatus: http.StatusBadRequest, wantCode: calculator.CodeInvalidDomain},
+		{name: "invalid logarithm domain", body: `{"operation":"ln","operands":[0]}`, wantStatus: http.StatusBadRequest, wantCode: calculator.CodeInvalidDomain},
+		{name: "reciprocal zero", body: `{"operation":"reciprocal","operands":[0]}`, wantStatus: http.StatusBadRequest, wantCode: calculator.CodeDivisionByZero},
 		{name: "invalid power operand count", body: `{"operation":"power","operands":[2]}`, wantStatus: http.StatusBadRequest, wantCode: calculator.CodeInvalidOperandCount},
 		{name: "invalid square root operand count", body: `{"operation":"sqrt","operands":[4,2]}`, wantStatus: http.StatusBadRequest, wantCode: calculator.CodeInvalidOperandCount},
 		{name: "unsupported operation", body: `{"operation":"modulo","operands":[4,2]}`, wantStatus: http.StatusBadRequest, wantCode: calculator.CodeInvalidOperation},

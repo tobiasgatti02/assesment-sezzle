@@ -1,5 +1,6 @@
 import {
   binaryOperations,
+  unaryOperations,
   type CalculationHistoryItem,
   type Operation,
 } from "../types/calculator";
@@ -7,7 +8,7 @@ import {
 export const HISTORY_STORAGE_KEY = "sezzle-calculator-history";
 export const MAX_HISTORY_ITEMS = 50;
 
-const operations = new Set<Operation>([...binaryOperations, "sqrt"]);
+const operations = new Set<Operation>([...binaryOperations, ...unaryOperations]);
 
 function defaultStorage(): Storage | null {
   try {

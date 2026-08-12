@@ -7,7 +7,19 @@ export const binaryOperations = [
 ] as const;
 
 export type BinaryOperation = (typeof binaryOperations)[number];
-export type Operation = BinaryOperation | "sqrt";
+
+export const unaryOperations = [
+  "sqrt",
+  "sin",
+  "cos",
+  "tan",
+  "ln",
+  "log10",
+  "reciprocal",
+] as const;
+
+export type UnaryOperation = (typeof unaryOperations)[number];
+export type Operation = BinaryOperation | UnaryOperation;
 
 export interface CalculationRequest {
   operation: Operation;
@@ -41,4 +53,10 @@ export const operationSymbols: Record<Operation, string> = {
   divide: "÷",
   power: "^",
   sqrt: "√",
+  sin: "sin",
+  cos: "cos",
+  tan: "tan",
+  ln: "ln",
+  log10: "log",
+  reciprocal: "1 ÷",
 };

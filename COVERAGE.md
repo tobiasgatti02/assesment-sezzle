@@ -1,6 +1,6 @@
 # Test Coverage Report
 
-Last generated: 2026-08-11
+Last generated: 2026-08-12
 
 Coverage artifacts are intentionally reproducible rather than committed. Run `make coverage` from the repository root to regenerate `frontend/coverage/index.html`, `frontend/coverage/coverage-summary.json`, and `backend/coverage.out`.
 
@@ -10,10 +10,10 @@ Command: `cd frontend && npm run test:coverage`
 
 | Metric | Covered | Total | Coverage |
 | --- | ---: | ---: | ---: |
-| Statements | 245 | 299 | 81.93% |
-| Branches | 158 | 203 | 77.83% |
-| Functions | 64 | 66 | 96.96% |
-| Lines | 226 | 266 | 84.96% |
+| Statements | 264 | 318 | 83.01% |
+| Branches | 181 | 227 | 79.73% |
+| Functions | 70 | 72 | 97.22% |
+| Lines | 244 | 284 | 85.91% |
 
 All configured thresholds pass: 80% statements, 75% branches, 90% functions, and 80% lines.
 
@@ -25,9 +25,9 @@ Command: `cd backend && go test -coverprofile=coverage.out ./internal/... && go 
 
 | Package | Statement coverage |
 | --- | ---: |
-| `internal/calculator` | 96.7% |
+| `internal/calculator` | 97.6% |
 | `internal/httpapi` | 100.0% |
 | `internal/webapp` | 100.0% |
-| **Total** | **98.4%** |
+| **Total** | **98.6%** |
 
 The backend report focuses on the testable service, HTTP, and frontend-composition packages. The process entry point in `cmd/server` only wires configuration and starts `http.Server`, so it is validated by build/vet rather than included in the unit coverage denominator.

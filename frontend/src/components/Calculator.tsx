@@ -3,6 +3,7 @@ import type {
   Operation,
 } from "../types/calculator";
 import type { CalculatorActions } from "../hooks/useCalculator";
+import { ScientificPanel } from "./ScientificPanel";
 
 interface CalculatorProps {
   display: string;
@@ -57,7 +58,10 @@ export function Calculator({
 }: CalculatorProps) {
   return (
     <section className="calculator-card" aria-label="Calculator">
-      <div className="calculator-display">
+      <div
+        className={`calculator-display ${error ? "has-error" : ""}`}
+        aria-busy={isCalculating}
+      >
         <div className="display-expression" aria-hidden="true">
           {isCalculating ? "Calculating…" : expression || "\u00a0"}
         </div>
@@ -67,17 +71,33 @@ export function Calculator({
           aria-live="polite"
           aria-atomic="true"
         >
-          {display}
+          <span
+            key={`${display}-${expression}`}
+            className="display-value-content"
+          >
+            {display}
+          </span>
         </output>
         <div className="display-message" role={error ? "alert" : undefined}>
-          {error || "\u00a0"}
+          {error ? (
+            <span key={error} className="display-message-content">
+              {error}
+            </span>
+          ) : (
+            "\u00a0"
+          )}
         </div>
       </div>
+
+      <ScientificPanel
+        disabled={isCalculating}
+        onApply={actions.applyUnaryOperation}
+      />
 
       <div className="calculator-keypad">
         <CalculatorKey label="C" ariaLabel="Clear" className="key-utility" onPress={actions.clear} />
         <CalculatorKey label="⌫" ariaLabel="Backspace" className="key-utility" onPress={actions.backspace} />
-        <CalculatorKey label="√" ariaLabel="Square root" className="key-operator" operation="sqrt" disabled={isCalculating} onPress={actions.applySquareRoot} />
+        <CalculatorKey label="√" ariaLabel="Square root" className="key-operator" operation="sqrt" disabled={isCalculating} onPress={() => actions.applyUnaryOperation("sqrt")} />
         <CalculatorKey label="÷" ariaLabel="Divide" className="key-operator" operation="divide" pendingOperation={pendingOperation} disabled={isCalculating} onPress={() => actions.selectOperation("divide")} />
 
         {["7", "8", "9"].map((digit) => <CalculatorKey key={digit} label={digit} disabled={isCalculating} onPress={() => actions.inputDigit(digit)} />)}

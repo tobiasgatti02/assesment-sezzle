@@ -12,6 +12,9 @@ describe("number formatting", () => {
     expect(formatExpression("multiply", [12, 8])).toBe("12 × 8");
     expect(formatExpression("sqrt", [81])).toBe("√81");
     expect(formatExpression("power", [2, 10])).toBe("2 ^ 10");
+    expect(formatExpression("sin", [0.5])).toBe("sin(0.5)");
+    expect(formatExpression("log10", [100])).toBe("log(100)");
+    expect(formatExpression("reciprocal", [4])).toBe("1 ÷ 4");
   });
 
   it("formats timestamps without exposing ISO strings", () => {

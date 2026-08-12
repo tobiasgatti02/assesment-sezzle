@@ -37,7 +37,7 @@ export function useCalculatorKeyboard(actions: CalculatorActions): void {
       } else if (event.key === "Escape" || event.key === "Delete") {
         currentActions.clear();
       } else if (event.key.toLowerCase() === "r") {
-        if (!event.repeat) currentActions.applySquareRoot();
+        if (!event.repeat) currentActions.applyUnaryOperation("sqrt");
       } else {
         consumed = false;
       }

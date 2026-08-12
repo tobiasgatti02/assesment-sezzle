@@ -4,6 +4,7 @@
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
+  font-weight: 300;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   --ink: #1c241f;
@@ -50,20 +51,12 @@ button:focus-visible {
   margin-bottom: 24px;
 }
 
-.app-header p {
-  margin: 0 0 7px;
-  color: var(--accent);
-  font-size: 0.72rem;
-  font-weight: 750;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
 .app-header h1 {
   margin: 0;
   font-size: clamp(1.65rem, 4vw, 2.25rem);
   line-height: 1.1;
   letter-spacing: -0.035em;
+  font-weight: 200;
 }
 
 .workspace {
@@ -95,6 +88,15 @@ button:focus-visible {
   border-radius: 14px;
   background: #f8f8f4;
   text-align: right;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.calculator-display.has-error {
+  border-color: rgb(162 59 53 / 45%);
+  background: #fdf7f5;
+  animation: error-nudge 220ms ease-out;
 }
 
 .display-expression {
@@ -115,11 +117,17 @@ button:focus-visible {
   color: var(--ink);
   font-size: clamp(2.2rem, 7vw, 3.25rem);
   font-variant-numeric: tabular-nums;
-  font-weight: 650;
+  font-weight: 300;
   letter-spacing: -0.045em;
   line-height: 1;
   scrollbar-width: thin;
   white-space: nowrap;
+}
+
+.display-value-content {
+  display: inline-block;
+  transform-origin: right center;
+  animation: display-enter 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .display-message {
@@ -131,6 +139,88 @@ button:focus-visible {
   line-height: 1.1rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.display-message-content {
+  display: block;
+  animation: message-enter 180ms ease-out;
+}
+
+.scientific-section {
+  margin-bottom: 10px;
+}
+
+.scientific-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 12px;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #e0e2dd;
+  border-radius: 11px;
+  color: #4f5752;
+  background: #f7f7f3;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.scientific-toggle:hover {
+  border-color: #cbd0ca;
+  background: #f0f2ed;
+}
+
+.scientific-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
+
+.scientific-chevron {
+  width: 1rem;
+  color: var(--accent);
+  font-size: 1rem;
+  line-height: 1;
+  text-align: center;
+}
+
+.scientific-controls {
+  display: grid;
+  margin-top: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  animation: scientific-enter 160ms ease-out;
+}
+
+.scientific-key {
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid #dce1dc;
+  border-radius: 10px;
+  color: var(--accent);
+  background: #f4f7f3;
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 400;
+}
+
+.scientific-key:hover:not(:disabled) {
+  border-color: #c4d1c7;
+  background: var(--accent-soft);
+}
+
+.scientific-key:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.scientific-key:disabled {
+  cursor: wait;
+  opacity: 0.6;
 }
 
 .calculator-keypad {
@@ -148,7 +238,7 @@ button:focus-visible {
   background: #fafaf6;
   cursor: pointer;
   font-size: 1.1rem;
-  font-weight: 650;
+  font-weight: 400;
   transition:
     background-color 120ms ease,
     border-color 120ms ease,
@@ -221,6 +311,7 @@ button:focus-visible {
 .history-header h2 {
   margin: 0;
   font-size: 1rem;
+  font-weight: 300;
   letter-spacing: -0.01em;
 }
 
@@ -231,7 +322,7 @@ button:focus-visible {
   background: transparent;
   cursor: pointer;
   font-size: 0.78rem;
-  font-weight: 650;
+  font-weight: 400;
 }
 
 .clear-history:hover {
@@ -250,7 +341,7 @@ button:focus-visible {
   margin: 0 0 5px;
   color: #4c554f;
   font-size: 0.92rem;
-  font-weight: 650;
+  font-weight: 400;
 }
 
 .history-empty span {
@@ -305,6 +396,7 @@ button:focus-visible {
   color: var(--ink);
   font-size: 1.05rem;
   font-variant-numeric: tabular-nums;
+  font-weight: 400;
   grid-column: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -338,6 +430,57 @@ button:focus-visible {
   color: #7b837d;
   font-size: 0.75rem;
   text-align: center;
+}
+
+@keyframes display-enter {
+  from {
+    opacity: 0.55;
+    transform: translateY(3px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes message-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes error-nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  35% {
+    transform: translateX(-2px);
+  }
+
+  70% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes scientific-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 760px) {
@@ -395,5 +538,17 @@ button:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .calculator-key {
     transition: none;
+  }
+
+  .calculator-display,
+  .calculator-display.has-error,
+  .display-value-content,
+  .display-message-content {
+    animation: none;
+    transition: none;
+  }
+
+  .scientific-controls {
+    animation: none;
   }
 }

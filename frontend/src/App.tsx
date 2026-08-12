@@ -15,7 +15,6 @@ export default function App() {
   return (
     <main className="app-shell">
       <header className="app-header">
-        <p>Full-stack calculator</p>
         <h1>Calculate with confidence.</h1>
       </header>
       <div className="workspace">

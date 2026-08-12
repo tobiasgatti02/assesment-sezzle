@@ -1,6 +1,6 @@
 # Sezzle Full-Stack Calculator
 
-A small, production-minded calculator with a React/TypeScript frontend and a Go REST API. It supports the four basic arithmetic operations, exponentiation, immediate square root, full keyboard control, and browser-persisted calculation history.
+A small, production-minded calculator with a React/TypeScript frontend and a Go REST API. It supports basic and scientific operations, full keyboard control, and browser-persisted calculation history.
 
 ## Run locally
 
@@ -37,10 +37,13 @@ Open `http://localhost:8080`. In the container, the Go process serves both the c
 ## Features
 
 - Addition, subtraction, multiplication, division, exponentiation, and square root
+- Collapsible scientific functions: sine, cosine, tangent, natural logarithm, base-10 logarithm, and reciprocal
 - All arithmetic and calculation validation performed by the Go service
 - Structured, user-safe API errors for invalid requests, domain errors, division by zero, and non-finite results
 - Mouse, touch, and full keyboard operation through the same calculator actions
 - Responsive, accessible controls with focus states, accessible names, and live result/error feedback
+- Subtle display/error transitions that respect `prefers-reduced-motion`
+- Friendly messages for mathematical, domain, malformed-request, and incomplete-calculation errors
 - Newest-first calculation history with reuse, individual deletion, and clear-all actions
 - Defensive `localStorage` persistence capped at 50 entries
 - Display-only significant-digit formatting that removes common floating-point noise without changing stored API results
@@ -62,6 +65,21 @@ Open `http://localhost:8080`. In the container, the Go process serves both the c
 | `R` | Square root |
 
 Modified shortcuts are ignored, so browser commands such as `Cmd+R` and `Ctrl+R` continue to work normally. Keyboard shortcuts are also ignored while focus is in an editable control.
+
+### Scientific functions
+
+Open the compact **Scientific** section inside the calculator to use:
+
+| Control | Operation |
+| --- | --- |
+| `sin` | Sine |
+| `cos` | Cosine |
+| `tan` | Tangent |
+| `ln` | Natural logarithm |
+| `log` | Base-10 logarithm |
+| `1/x` | Reciprocal |
+
+Trigonometric inputs use radians, indicated by the `RAD` label. Scientific functions are unary and execute immediately against the current display, just like square root. Logarithms reject zero and negative inputs; reciprocal rejects zero.
 
 ## API
 
@@ -112,7 +130,7 @@ Success responses use `{ "result": number }`. Errors use a stable structure:
 }
 ```
 
-Supported operation names are `add`, `subtract`, `multiply`, `divide`, `power`, and `sqrt`. Binary operations require exactly two operands; `sqrt` requires exactly one.
+Supported operation names are `add`, `subtract`, `multiply`, `divide`, `power`, `sqrt`, `sin`, `cos`, `tan`, `ln`, `log10`, and `reciprocal`. Binary operations require exactly two operands; all scientific operations require exactly one.
 
 ## Architecture
 
@@ -190,7 +208,7 @@ go tool cover -func=coverage.out
 
 Vitest enforces minimum coverage thresholds of 80% statements, 75% branches, 90% functions, and 80% lines. The latest measured summary and scope are recorded in [COVERAGE.md](./COVERAGE.md). Generated HTML/JSON profiles and Go coverage data are ignored by Git and can be reproduced with `make coverage`.
 
-Frontend tests use Vitest and React Testing Library to cover API payloads, power/square-root behavior, failures, keyboard mappings, history persistence/reuse/deletion/clearing, corrupt storage, ordering, and the 50-entry limit. Backend tests are table-driven and cover all operations, operand-count errors, malformed requests, invalid domains, unsupported operations, and non-finite values/results.
+Frontend tests use Vitest and React Testing Library to cover API payloads, basic/scientific behavior, failures, keyboard mappings, history persistence/reuse/deletion/clearing, corrupt storage, ordering, and the 50-entry limit. Backend tests are table-driven and cover all operations, operand-count errors, malformed requests, invalid domains, unsupported operations, and non-finite values/results.
 
 ## Trade-offs
 

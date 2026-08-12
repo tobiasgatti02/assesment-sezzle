@@ -8,12 +8,18 @@ import (
 type Operation string
 
 const (
-	OperationAdd      Operation = "add"
-	OperationSubtract Operation = "subtract"
-	OperationMultiply Operation = "multiply"
-	OperationDivide   Operation = "divide"
-	OperationPower    Operation = "power"
-	OperationSqrt     Operation = "sqrt"
+	OperationAdd        Operation = "add"
+	OperationSubtract   Operation = "subtract"
+	OperationMultiply   Operation = "multiply"
+	OperationDivide     Operation = "divide"
+	OperationPower      Operation = "power"
+	OperationSqrt       Operation = "sqrt"
+	OperationSin        Operation = "sin"
+	OperationCos        Operation = "cos"
+	OperationTan        Operation = "tan"
+	OperationLn         Operation = "ln"
+	OperationLog10      Operation = "log10"
+	OperationReciprocal Operation = "reciprocal"
 )
 
 const (
@@ -79,6 +85,33 @@ func (s *Service) Calculate(operation Operation, operands []float64) (float64, *
 			}
 		}
 		result = math.Sqrt(operands[0])
+	case OperationSin:
+		result = math.Sin(operands[0])
+	case OperationCos:
+		result = math.Cos(operands[0])
+	case OperationTan:
+		result = math.Tan(operands[0])
+	case OperationLn:
+		if operands[0] <= 0 {
+			return 0, &Error{
+				Code:    CodeInvalidDomain,
+				Message: "natural logarithm is only defined for positive numbers",
+			}
+		}
+		result = math.Log(operands[0])
+	case OperationLog10:
+		if operands[0] <= 0 {
+			return 0, &Error{
+				Code:    CodeInvalidDomain,
+				Message: "base-10 logarithm is only defined for positive numbers",
+			}
+		}
+		result = math.Log10(operands[0])
+	case OperationReciprocal:
+		if operands[0] == 0 {
+			return 0, &Error{Code: CodeDivisionByZero, Message: "cannot divide by zero"}
+		}
+		result = 1 / operands[0]
 	}
 
 	if !isFinite(result) {
@@ -94,7 +127,7 @@ func operandCount(operation Operation) (int, bool) {
 	switch operation {
 	case OperationAdd, OperationSubtract, OperationMultiply, OperationDivide, OperationPower:
 		return 2, true
-	case OperationSqrt:
+	case OperationSqrt, OperationSin, OperationCos, OperationTan, OperationLn, OperationLog10, OperationReciprocal:
 		return 1, true
 	default:
 		return 0, false

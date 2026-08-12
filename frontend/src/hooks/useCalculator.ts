@@ -5,6 +5,7 @@ import {
   operationSymbols,
   type BinaryOperation,
   type Operation,
+  type UnaryOperation,
 } from "../types/calculator";
 import { formatExpression, formatNumber } from "../utils/numberFormat";
 
@@ -17,7 +18,7 @@ export interface CalculatorActions {
   inputDecimal: () => void;
   selectOperation: (operation: BinaryOperation) => void;
   calculateResult: () => void;
-  applySquareRoot: () => void;
+  applyUnaryOperation: (operation: UnaryOperation) => void;
   backspace: () => void;
   clear: () => void;
   reuseResult: (result: number) => void;
@@ -75,7 +76,7 @@ export function useCalculator({
         return result;
       } catch (requestError) {
         if (activeRequest.current !== requestId) return null;
-        setError(toUserMessage(requestError));
+        setError(toUserMessage(requestError, operation));
         setStoredValue(null);
         setPendingOperation(null);
         setWaitingForOperand(false);
@@ -172,13 +173,15 @@ export function useCalculator({
   );
 
   const calculateResult = useCallback(async () => {
-    if (
-      activeRequest.current !== null ||
-      error ||
-      !pendingOperation ||
-      storedValue === null ||
-      waitingForOperand
-    ) {
+    if (activeRequest.current !== null || error) {
+      return;
+    }
+    if (pendingOperation && storedValue !== null && waitingForOperand) {
+      setError("Complete the calculation first");
+      setJustCalculated(false);
+      return;
+    }
+    if (!pendingOperation || storedValue === null) {
       return;
     }
 
@@ -207,19 +210,26 @@ export function useCalculator({
     waitingForOperand,
   ]);
 
-  const applySquareRoot = useCallback(async () => {
-    if (activeRequest.current !== null || error || waitingForOperand) return;
+  const applyUnaryOperation = useCallback(
+    async (operation: UnaryOperation) => {
+      if (activeRequest.current !== null || error || waitingForOperand) return;
 
-    const operand = Number(display);
-    const calculationExpression = formatExpression("sqrt", [operand]);
-    const result = await runCalculation("sqrt", [operand], calculationExpression);
-    if (result === null) return;
+      const operand = Number(display);
+      const calculationExpression = formatExpression(operation, [operand]);
+      const result = await runCalculation(
+        operation,
+        [operand],
+        calculationExpression,
+      );
+      if (result === null) return;
 
-    setDisplay(formatNumber(result));
-    setExpression(calculationExpression);
-    setWaitingForOperand(false);
-    setJustCalculated(pendingOperation === null);
-  }, [display, error, pendingOperation, runCalculation, waitingForOperand]);
+      setDisplay(formatNumber(result));
+      setExpression(calculationExpression);
+      setWaitingForOperand(false);
+      setJustCalculated(pendingOperation === null);
+    },
+    [display, error, pendingOperation, runCalculation, waitingForOperand],
+  );
 
   const backspace = useCallback(() => {
     if (activeRequest.current !== null || waitingForOperand) return;
@@ -250,13 +260,13 @@ export function useCalculator({
       inputDecimal,
       selectOperation: (operation) => void selectOperation(operation),
       calculateResult: () => void calculateResult(),
-      applySquareRoot: () => void applySquareRoot(),
+      applyUnaryOperation: (operation) => void applyUnaryOperation(operation),
       backspace,
       clear: () => reset(),
       reuseResult,
     }),
     [
-      applySquareRoot,
+      applyUnaryOperation,
       backspace,
       calculateResult,
       inputDecimal,
@@ -277,15 +287,23 @@ export function useCalculator({
   };
 }
 
-function toUserMessage(error: unknown): string {
+function toUserMessage(error: unknown, operation: Operation): string {
   if (error instanceof CalculatorApiError) {
     switch (error.code) {
       case "DIVISION_BY_ZERO":
         return "Cannot divide by zero";
       case "INVALID_DOMAIN":
-        return "Square root requires a non-negative number";
+        return operation === "sqrt"
+          ? "Square root requires a non-negative number"
+          : "Logarithms require a positive number";
       case "INVALID_RESULT":
         return "The result is outside the supported range";
+      case "MALFORMED_REQUEST":
+      case "INVALID_OPERAND_COUNT":
+      case "INVALID_OPERAND":
+        return "Invalid calculation syntax";
+      case "INVALID_OPERATION":
+        return "This operation is not supported";
       case "NETWORK_ERROR":
         return "Unable to reach the calculator service";
       default:

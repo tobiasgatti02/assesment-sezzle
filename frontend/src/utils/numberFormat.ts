@@ -15,11 +15,22 @@ export function formatExpression(
   operation: Operation,
   operands: number[],
 ): string {
-  if (operation === "sqrt") {
-    return `${operationSymbols.sqrt}${formatNumber(operands[0])}`;
+  switch (operation) {
+    case "sqrt":
+      return `${operationSymbols.sqrt}${formatNumber(operands[0])}`;
+    case "reciprocal":
+      return `1 ÷ ${formatNumber(operands[0])}`;
+    case "sin":
+    case "cos":
+    case "tan":
+    case "ln":
+    case "log10":
+      return `${operationSymbols[operation]}(${formatNumber(operands[0])})`;
+    default: {
+      const [left, right] = operands;
+      return `${formatNumber(left)} ${operationSymbols[operation as BinaryOperation]} ${formatNumber(right)}`;
+    }
   }
-  const [left, right] = operands;
-  return `${formatNumber(left)} ${operationSymbols[operation as BinaryOperation]} ${formatNumber(right)}`;
 }
 
 export function formatRelativeTime(

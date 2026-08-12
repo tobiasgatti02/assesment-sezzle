@@ -21,7 +21,7 @@ type Handler struct {
 
 type calculateRequest struct {
 	Operation calculator.Operation `json:"operation"`
-	Operands  []float64            `json:"operands"`
+	Operands  []*float64           `json:"operands"`
 }
 
 type calculateResponse struct {
@@ -60,7 +60,19 @@ func (h *Handler) calculate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, calculationErr := h.calculator.Calculate(request.Operation, request.Operands)
+	operands := make([]float64, len(request.Operands))
+	for index, operand := range request.Operands {
+		if operand == nil {
+			writeJSON(w, http.StatusBadRequest, errorResponse{Error: &calculator.Error{
+				Code:    calculator.CodeInvalidOperand,
+				Message: "operands must be finite numbers",
+			}})
+			return
+		}
+		operands[index] = *operand
+	}
+
+	result, calculationErr := h.calculator.Calculate(request.Operation, operands)
 	if calculationErr != nil {
 		writeJSON(w, http.StatusBadRequest, errorResponse{Error: calculationErr})
 		return

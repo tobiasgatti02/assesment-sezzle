@@ -17,6 +17,13 @@ export class CalculatorApiError extends Error {
 export async function calculate(
   request: CalculationRequest,
 ): Promise<number> {
+  if (!request.operands.every(Number.isFinite)) {
+    throw new CalculatorApiError(
+      "INVALID_OPERAND",
+      "Operands must be finite numbers",
+    );
+  }
+
   let response: Response;
   try {
     response = await fetch("/api/v1/calculate", {

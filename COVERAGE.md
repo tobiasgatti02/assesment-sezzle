@@ -10,10 +10,10 @@ Command: `cd frontend && npm run test:coverage`
 
 | Metric | Covered | Total | Coverage |
 | --- | ---: | ---: | ---: |
-| Statements | 264 | 318 | 83.01% |
-| Branches | 181 | 227 | 79.73% |
+| Statements | 266 | 320 | 83.12% |
+| Branches | 183 | 229 | 79.91% |
 | Functions | 70 | 72 | 97.22% |
-| Lines | 244 | 284 | 85.91% |
+| Lines | 246 | 286 | 86.01% |
 
 All configured thresholds pass: 80% statements, 75% branches, 90% functions, and 80% lines.
 
@@ -28,6 +28,6 @@ Command: `cd backend && go test -coverprofile=coverage.out ./internal/... && go 
 | `internal/calculator` | 97.6% |
 | `internal/httpapi` | 100.0% |
 | `internal/webapp` | 100.0% |
-| **Total** | **98.6%** |
+| **Total** | **98.8%** |
 
 The backend report focuses on the testable service, HTTP, and frontend-composition packages. The process entry point in `cmd/server` only wires configuration and starts `http.Server`, so it is validated by build/vet rather than included in the unit coverage denominator.

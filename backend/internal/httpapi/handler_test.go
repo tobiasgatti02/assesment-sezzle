@@ -31,6 +31,7 @@ func TestCalculateHandler(t *testing.T) {
 		{name: "invalid power operand count", body: `{"operation":"power","operands":[2]}`, wantStatus: http.StatusBadRequest, wantCode: calculator.CodeInvalidOperandCount},
 		{name: "invalid square root operand count", body: `{"operation":"sqrt","operands":[4,2]}`, wantStatus: http.StatusBadRequest, wantCode: calculator.CodeInvalidOperandCount},
 		{name: "unsupported operation", body: `{"operation":"modulo","operands":[4,2]}`, wantStatus: http.StatusBadRequest, wantCode: calculator.CodeInvalidOperation},
+		{name: "null operand", body: `{"operation":"add","operands":[null,2]}`, wantStatus: http.StatusBadRequest, wantCode: calculator.CodeInvalidOperand},
 		{name: "malformed JSON", body: `{"operation":`, wantStatus: http.StatusBadRequest, wantCode: "MALFORMED_REQUEST"},
 		{name: "unknown field", body: `{"operation":"add","operands":[1,2],"extra":true}`, wantStatus: http.StatusBadRequest, wantCode: "MALFORMED_REQUEST"},
 		{name: "multiple JSON values", body: `{"operation":"add","operands":[1,2]} {}`, wantStatus: http.StatusBadRequest, wantCode: "MALFORMED_REQUEST"},
